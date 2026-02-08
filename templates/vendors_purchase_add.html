@@ -1,0 +1,117 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Add purchase</h1>
+    <p>Record materials purchased from a vendor.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('vendors') }}">Back to vendors</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post" id="vendor-purchase-form">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+    <label>
+      Vendor
+      <select name="vendor_id" required>
+        <option value="">Select vendor</option>
+        {% for v in vendors %}
+        <option value="{{ v.id }}">{{ v.vendor_code }} - {{ v.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <div id="purchase-items" class="stack">
+      <div class="card" style="padding: 16px;">
+        <div class="grid two">
+          <label>
+            Material
+            <input type="text" name="material_name" required>
+          </label>
+          <label>
+            Quantity
+            <input type="number" step="0.01" name="qty" value="1" min="0">
+          </label>
+          <label>
+            UOM
+            <select name="uom_id">
+              <option value="">Select</option>
+              {% for u in uoms %}
+              <option value="{{ u.id }}">{{ u.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Unit price
+            <input type="number" step="0.01" name="unit_price" value="0" min="0">
+          </label>
+        </div>
+        <div class="actions" style="margin-top: 0.6rem;">
+          <button type="button" class="btn ghost purchase-remove" aria-label="Remove item">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" id="add-purchase-item">+ Add another material</button>
+      <button class="btn primary" type="submit">Save purchase</button>
+    </div>
+  </form>
+</section>
+
+<template id="purchase-item-template">
+  <div class="card" style="padding: 16px;">
+    <div class="grid two">
+      <label>
+        Material
+        <input type="text" name="material_name" required>
+      </label>
+      <label>
+        Quantity
+        <input type="number" step="0.01" name="qty" value="1" min="0">
+      </label>
+      <label>
+        UOM
+        <select name="uom_id">
+          <option value="">Select</option>
+          {% for u in uoms %}
+          <option value="{{ u.id }}">{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Unit price
+        <input type="number" step="0.01" name="unit_price" value="0" min="0">
+      </label>
+    </div>
+    <div class="actions" style="margin-top: 0.6rem;">
+      <button type="button" class="btn ghost purchase-remove" aria-label="Remove item">Remove</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  const addPurchaseBtn = document.getElementById("add-purchase-item");
+  const purchaseList = document.getElementById("purchase-items");
+  const purchaseTemplate = document.getElementById("purchase-item-template");
+
+  if (addPurchaseBtn && purchaseList && purchaseTemplate) {
+    addPurchaseBtn.addEventListener("click", () => {
+      const clone = purchaseTemplate.content.cloneNode(true);
+      purchaseList.appendChild(clone);
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const btn = event.target.closest(".purchase-remove");
+    if (btn) {
+      const card = btn.closest(".card");
+      if (card) {
+        card.remove();
+      }
+    }
+  });
+</script>
+{% endblock %}

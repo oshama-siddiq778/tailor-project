@@ -1,0 +1,118 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Add inventory items</h1>
+    <p>Add one or more materials with quantity and UOM.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('inventory') }}">Back to inventory</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post" id="inventory-add-form">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <div id="inventory-items" class="stack">
+      <div class="card" style="padding: 16px;">
+        <div class="grid two">
+          <label>
+            Item name
+            <input type="text" name="item_name" required>
+          </label>
+          <label>
+            Vendor
+            <select name="item_vendor">
+              <option value="">Select vendor</option>
+              {% for v in vendors %}
+              <option value="{{ v.name }}">{{ v.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Quantity
+            <input type="number" name="item_qty" value="0" min="0">
+          </label>
+          <label>
+            UOM
+            <select name="item_uom_id">
+              <option value="">Select</option>
+              {% for u in uoms %}
+              <option value="{{ u.id }}">{{ u.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="actions" style="margin-top: 0.6rem;">
+          <button type="button" class="btn ghost item-remove" aria-label="Remove item">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" id="add-inventory-item">+ Add another item</button>
+      <button class="btn primary" type="submit">Save items</button>
+    </div>
+  </form>
+</section>
+
+<template id="inventory-item-template">
+  <div class="card" style="padding: 16px;">
+    <div class="grid two">
+      <label>
+        Item name
+        <input type="text" name="item_name" required>
+      </label>
+      <label>
+        Vendor
+        <select name="item_vendor">
+          <option value="">Select vendor</option>
+          {% for v in vendors %}
+          <option value="{{ v.name }}">{{ v.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Quantity
+        <input type="number" name="item_qty" value="0" min="0">
+      </label>
+      <label>
+        UOM
+        <select name="item_uom_id">
+          <option value="">Select</option>
+          {% for u in uoms %}
+          <option value="{{ u.id }}">{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="actions" style="margin-top: 0.6rem;">
+      <button type="button" class="btn ghost item-remove" aria-label="Remove item">Remove</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  const addBtn = document.getElementById("add-inventory-item");
+  const list = document.getElementById("inventory-items");
+  const template = document.getElementById("inventory-item-template");
+
+  if (addBtn && list && template) {
+    addBtn.addEventListener("click", () => {
+      const clone = template.content.cloneNode(true);
+      list.appendChild(clone);
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const btn = event.target.closest(".item-remove");
+    if (btn) {
+      const card = btn.closest(".card");
+      if (card) {
+        card.remove();
+      }
+    }
+  });
+</script>
+{% endblock %}

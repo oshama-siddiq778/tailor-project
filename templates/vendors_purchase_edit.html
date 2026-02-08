@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit purchase</h1>
+    <p>Update materials purchased from a vendor.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('vendors') }}">Back to vendors</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <div class="grid two">
+      <label>
+        Vendor
+        <select name="vendor_id" required>
+          <option value="">Select vendor</option>
+          {% for v in vendors %}
+          <option value="{{ v.id }}" {% if purchase.vendor_id == v.id %}selected{% endif %}>{{ v.vendor_code }} - {{ v.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Material
+        <input type="text" name="material_name" value="{{ purchase.material_name }}" required>
+      </label>
+      <label>
+        Quantity
+        <input type="number" step="0.01" name="qty" value="{{ purchase.qty }}" min="0">
+      </label>
+      <label>
+        UOM
+        <select name="uom_id">
+          <option value="">Select</option>
+          {% for u in uoms %}
+          <option value="{{ u.id }}" {% if purchase.uom_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Unit price
+        <input type="number" step="0.01" name="unit_price" value="{{ purchase.unit_price }}" min="0">
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Save changes</button>
+      <a class="btn ghost" href="{{ url_for('vendors') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

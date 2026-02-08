@@ -1,0 +1,54 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit inventory item</h1>
+    <p>Update vendor, quantity, and UOM.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('inventory') }}">Back to inventory</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+    <div class="grid two">
+      <label>
+        Inventory code
+        <input type="text" value="{{ item.inventory_code }}" readonly>
+      </label>
+      <label>
+        Item name
+        <input type="text" name="name" value="{{ item.name }}" required>
+      </label>
+      <label>
+        Vendor
+        <select name="supplier">
+          <option value="">Select vendor</option>
+          {% for v in vendors %}
+          <option value="{{ v.name }}" {% if item.supplier == v.name %}selected{% endif %}>{{ v.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Quantity
+        <input type="number" name="qty" value="{{ item.qty }}" min="0">
+      </label>
+      <label>
+        UOM
+        <select name="uom_id">
+          <option value="">Select</option>
+          {% for u in uoms %}
+          <option value="{{ u.id }}" {% if item.uom_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="submit">Save changes</button>
+      <a class="btn ghost" href="{{ url_for('inventory') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Add staff</h1>
+    <p>Create a new staff profile.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('tailors') }}">Back to staff</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    <div class="grid two">
+      <label>
+        Staff ID
+        <input type="text" name="tailor_code" value="{{ tailor_code }}" readonly>
+      </label>
+      <label>
+        Staff name
+        <input type="text" name="name" required>
+      </label>
+      <label>
+        Staff role
+        <input type="text" name="role" placeholder="Shirt / Pant / Master" required>
+      </label>
+      <label>
+        Phone number
+        <input type="text" name="phone" required>
+      </label>
+    </div>
+
+    <label>Status</label>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="status" value="Active" checked> Active
+      </label>
+      <label>
+        <input type="radio" name="status" value="Working"> Working
+      </label>
+      <label>
+        <input type="radio" name="status" value="Inactive"> Inactive
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn primary">Save staff</button>
+      <a href="{{ url_for('tailors') }}" class="btn ghost">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

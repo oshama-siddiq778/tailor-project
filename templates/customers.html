@@ -1,0 +1,44 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Customers</h1>
+    <p>Find past measurements and order history quickly.</p>
+  </div>
+  <form class="search" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by name or phone" />
+    <button class="btn ghost" type="submit">Search</button>
+  </form>
+</div>
+
+<section class="card">
+  {% if customers %}
+  <div class="table-wrap has-filters" style="--table-cols: 1.4fr 1fr 2fr 0.6fr;">
+    <div class="table-filters">
+      <input type="text" placeholder="Filter name" />
+      <input type="text" placeholder="Filter phone" />
+      <input type="text" placeholder="Filter notes" />
+      <div class="filter-spacer"></div>
+    </div>
+    <div class="table">
+      <div class="table-row table-head">
+        <div>Name</div>
+        <div>Phone</div>
+        <div>Notes</div>
+        <div></div>
+      </div>
+      {% for customer in customers %}
+      <div class="table-row">
+        <div>{{ customer.name }}</div>
+        <div>{{ customer.phone }}</div>
+        <div class="muted">{{ customer.notes or "-" }}</div>
+        <div><a class="link" href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <p class="muted">No customers found.</p>
+  {% endif %}
+</section>
+{% endblock %}

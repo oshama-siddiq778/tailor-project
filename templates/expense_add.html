@@ -1,0 +1,124 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Add expense</h1>
+    <p>Normal expense or salary payment</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('expense_dashboard') }}">Back to expense</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <div class="grid two">
+      <label>
+        Expense no
+        <input type="text" value="{{ expense_no }}" readonly>
+      </label>
+      <label id="staffLabel">
+        Staff no
+        <div style="display:flex; align-items:center; gap:12px;">
+          <select name="staff_no"
+                id="staffNo"
+                disabled
+                onchange="loadStaffName()"
+                style="flex:1;">
+            <option value="">-- Select Staff --</option>
+            {% for s in staffs %}
+              <option value="{{ s.tailor_code }}">
+                {{ s.tailor_code }}
+              </option>
+            {% endfor %}
+          </select>
+
+          <label style="display:flex; align-items:center; gap:6px; font-weight:500; white-space:nowrap;">
+            <input type="checkbox"
+                  name="is_salary"
+                  value="1"
+                  id="salaryCheck"
+                  onchange="toggleSalary()">
+            Salary Payment
+          </label>
+        </div>
+      </label>
+
+      <label id="nameLabel">
+        Expense name
+        <input type="text" name="expense_name" id="nameInput" required>
+      </label>
+
+      <label id="amountLabel">
+        Expense amount
+        <input type="number"
+               step="0.01"
+               name="expense_amount"
+               id="amountInput"
+               required>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Save & Print</button>
+    </div>
+  </form>
+</section>
+
+<script>
+function loadStaffName() {
+  const staffCode = document.getElementById("staffNo").value;
+  const nameInput = document.getElementById("nameInput");
+
+  if (!staffCode) {
+    nameInput.value = "";
+    return;
+  }
+
+  fetch(`/api/staff/${staffCode}`)
+    .then(res => res.json())
+    .then(data => {
+      nameInput.value = data.name || "";
+    });
+}
+function toggleSalary() {
+  const salary = document.getElementById("salaryCheck").checked;
+
+  const staffNo = document.getElementById("staffNo");
+  const nameInput = document.getElementById("nameInput");
+  const nameLabel = document.getElementById("nameLabel");
+  const amountLabel = document.getElementById("amountLabel");
+  const amountInput = document.getElementById("amountInput");
+
+  if (salary) {
+    staffNo.disabled = false;
+    staffNo.required = true;
+
+    nameInput.readOnly = true;
+    nameInput.value = "";
+
+    nameLabel.innerText = "Staff name";
+    amountLabel.innerText = "Salary amount";
+
+    amountInput.name = "salary_amount";
+    amountInput.value = "";
+  } else {
+    staffNo.disabled = true;
+    staffNo.required = false;
+    staffNo.value = "";
+
+    nameInput.readOnly = false;
+    nameInput.value = "";
+
+    nameLabel.innerText = "Expense name";
+    amountLabel.innerText = "Expense amount";
+
+    amountInput.name = "expense_amount";
+    amountInput.value = "";
+  }
+}
+</script>
+
+{% endblock %}

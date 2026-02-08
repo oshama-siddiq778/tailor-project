@@ -1,0 +1,101 @@
+﻿{% extends "base.html" %}
+{% block content %}
+
+<!-- PAGE STYLES (LOCAL ONLY) -->
+<style>
+  .expense-header {
+    margin-bottom: 15px;
+  }
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .no-data {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+  }
+</style>
+
+<!-- HEADER -->
+<div class="expense-header">
+  <h2>Expense Overview</h2>
+  <p style="color:#666;">Overall expenses and salary records</p>
+</div>
+
+<!-- FILTER + ACTION -->
+<div class="filter-bar">
+  <div class="filters">
+    <a href="{{ url_for('expense_dashboard', type='all') }}"
+       class="chip {{ 'active' if filter_type == 'all' else '' }}">
+       All
+    </a>
+
+    <a href="{{ url_for('expense_dashboard', type='expense') }}"
+       class="chip {{ 'active' if filter_type == 'expense' else '' }}">
+       Expense
+    </a>
+
+    <a href="{{ url_for('expense_dashboard', type='salary') }}"
+       class="chip {{ 'active' if filter_type == 'salary' else '' }}">
+       Salary
+    </a>
+  </div>
+
+  <div style="margin-left:auto;">
+    <a href="{{ url_for('expense_add') }}" class="btn primary">+ Add Expense</a>
+  </div>
+</div>
+
+<!-- TABLE -->
+<section class="card">
+  <div class="table-wrap has-filters" style="--table-cols: 1fr 1.6fr 1fr 0.9fr 0.9fr 1.1fr 0.6fr;">
+    <div class="table-filters">
+      <input type="text" placeholder="Filter expense no" />
+      <input type="text" placeholder="Filter name" />
+      <input type="text" placeholder="Filter amount" />
+      <input type="text" placeholder="Filter staff no" />
+      <input type="text" placeholder="Filter salary" />
+      <input type="text" placeholder="Filter date" />
+      <div class="filter-spacer"></div>
+    </div>
+    <div class="table">
+      <div class="table-row table-head">
+        <div>Expense No</div>
+        <div>Name</div>
+        <div>Amount</div>
+        <div>Staff No</div>
+        <div>Salary</div>
+        <div>Date</div>
+        <div></div>
+      </div>
+      {% if expenses %}
+        {% for e in expenses %}
+        <div class="table-row">
+          <div>{{ e.expense_no }}</div>
+          <div>{{ e.expense_name }}</div>
+          <div>Rs. {{ e.amount }}</div>
+          <div>{{ e.staff_no or "-" }}</div>
+          <div>{{ e.salary_amount or "-" }}</div>
+          <div>{{ e.created_at }}</div>
+          <div>
+            <a class="icon-btn edit" href="{{ url_for('expense_edit', expense_id=e.id) }}" aria-label="Edit">&#9998;</a>
+            <form method="post" action="{{ url_for('expense_delete', expense_id=e.id) }}" style="display:inline;">
+              <button class="icon-btn delete" type="submit" aria-label="Delete">&#128465;</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="table-row">
+          <div class="no-data" style="grid-column: 1 / -1;">No records found</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

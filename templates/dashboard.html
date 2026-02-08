@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero hero-dashboard">
+  <div>
+    <div class="eyebrow">Premier Tailors</div>
+    <h1>Decision-ready operations dashboard</h1>
+    <p>See sales, production, inventory, and live order flow in one place.</p>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="{{ url_for('order_new') }}">+ New Order</a>
+    <a class="btn ghost" href="{{ url_for('orders') }}">View all orders</a>
+  </div>
+</section>
+
+{% if q %}
+<section class="card pickup-card">
+  <div class="card-header">
+    <h3>Pickup search results</h3>
+    <span class="pill">"{{ q }}"</span>
+  </div>
+  {% if pickup_results %}
+  <ul class="list">
+    {% for customer in pickup_results %}
+    <li>
+      <div>
+        <strong>{{ customer.name }}</strong>
+        <div class="muted">{{ customer.phone }} &middot; Latest order #{{ customer.order_id or "-" }} ({{ customer.order_status or "No orders" }})</div>
+      </div>
+      <a class="link" href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No customers found. Try a different name or phone number.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="grid kpi">
+  <div class="card stat-card">
+    <h3>Revenue</h3>
+    <div class="big">Rs. {{ '%.2f'|format(revenue) }}</div>
+    <div class="muted">Paid orders</div>
+  </div>
+  <div class="card stat-card">
+    <h3>Profit / Loss</h3>
+    <div class="big">Rs. {{ '%.2f'|format(revenue - spent) }}</div>
+    <div class="muted">Revenue - spend</div>
+  </div>
+  <div class="card stat-card">
+    <h3>Tailored sales</h3>
+    <div class="big">{{ total_items }}</div>
+    <div class="muted">Items produced</div>
+  </div>
+  <div class="card stat-card">
+    <h3>Material sales</h3>
+    <div class="big">0</div>
+    <div class="muted">Track fabric sales</div>
+  </div>
+  <div class="card stat-card">
+    <h3>Stock on hand</h3>
+    <div class="big">{{ stock_units }}</div>
+    <div class="muted">Total units</div>
+  </div>
+  <div class="card stat-card">
+    <h3>Low stock</h3>
+    <div class="big">{{ low_stock_count }}</div>
+    <div class="muted">Needs reorder</div>
+  </div>
+</section>
+
+<section class="grid one dashboard-core">
+  <section class="card assignment-board">
+    <div class="card-header">
+      <h3>Assign tailors</h3>
+      <span class="pill">Separate from order intake</span>
+    </div>
+    <p class="muted">Select an active order and assign the correct team or tailor.</p>
+    {% if active_orders %}
+    <div class="assign-list">
+      {% for order in active_orders %}
+      <form class="assign-row" method="post" action="{{ url_for('order_detail', order_id=order.id) }}">
+        <input type="hidden" name="notes" value="{{ order.notes or '' }}" />
+        <div class="assign-meta">
+          <strong>#{{ order.id }}</strong> {{ order.name }}
+          <div class="muted">{{ order.phone }} &middot; {{ order.status }}</div>
+        </div>
+        <div class="assign-controls">
+          <label>
+            Due
+            <input type="date" name="due_date" value="{{ order.due_date or '' }}" />
+          </label>
+          <label>
+            Status
+            <select name="status">
+              <option value="Pending" {% if order.status == "Pending" %}selected{% endif %}>Pending</option>
+              <option value="In progress" {% if order.status == "In progress" %}selected{% endif %}>In progress</option>
+              <option value="Ready" {% if order.status == "Ready" %}selected{% endif %}>Ready</option>
+              <option value="Completed" {% if order.status == "Completed" %}selected{% endif %}>Completed</option>
+            </select>
+          </label>
+          <label>
+            Tailor
+            <select name="assigned_tailor">
+              <option value="" {% if not order.assigned_tailor %}selected{% endif %}>Not assigned</option>
+              {% for tailor in tailors %}
+              <option {% if order.assigned_tailor == tailor.name %}selected{% endif %}>{{ tailor.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="btn ghost">Update</button>
+      </form>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No active orders to assign right now.</p>
+    {% endif %}
+  </section>
+</section>
+
+<section class="grid two">
+  <div class="card chart-card"
+       data-pending="{{ counts.get('Pending', 0) }}"
+       data-progress="{{ counts.get('In progress', 0) }}"
+       data-ready="{{ counts.get('Ready', 0) }}"
+       data-completed="{{ counts.get('Completed', 0) }}">
+    <div class="card-header">
+      <h3>Order status mix</h3>
+      <span class="pill">Today</span>
+    </div>
+    <canvas id="statusChart" height="220"></canvas>
+  </div>
+  <div class="card chart-card"
+       data-shirt="{{ shirt_queue|length }}"
+       data-pant="{{ pant_queue|length }}">
+    <div class="card-header">
+      <h3>Team workload</h3>
+      <span class="pill">Active queue</span>
+    </div>
+    <canvas id="teamChart" height="220"></canvas>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <div class="card-header">
+      <h3>Shirt team queue</h3>
+      <span class="pill">5 tailors</span>
+    </div>
+    {% if shirt_queue %}
+    <ul class="list">
+      {% for order in shirt_queue %}
+      <li>
+        <div>
+          <strong>#{{ order.id }}</strong> {{ order.name }}
+          <div class="muted">Due: {{ order.due_date or "Not set" }} &middot; Qty: {{ order.total_qty }}</div>
+        </div>
+        <span class="tag">{{ order.status }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No shirt orders in the queue.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Pant team queue</h3>
+      <span class="pill">5 tailors</span>
+    </div>
+    {% if pant_queue %}
+    <ul class="list">
+      {% for order in pant_queue %}
+      <li>
+        <div>
+          <strong>#{{ order.id }}</strong> {{ order.name }}
+          <div class="muted">Due: {{ order.due_date or "Not set" }} &middot; Qty: {{ order.total_qty }}</div>
+        </div>
+        <span class="tag">{{ order.status }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No pant orders in the queue.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h3>Recent orders</h3>
+    {% if recent_orders %}
+    <ul class="list">
+      {% for order in recent_orders %}
+      <li>
+        <div>
+          <strong>#{{ order.id }}</strong> {{ order.name }}
+          <div class="muted">{{ order.phone }} &middot; {{ order.created_at }}</div>
+        </div>
+        <a class="link" href="{{ url_for('order_detail', order_id=order.id) }}">Open</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No orders yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Low stock alerts</h3>
+    {% if low_stock %}
+    <ul class="list">
+      {% for item in low_stock %}
+      <li>
+        <div>
+          <strong>{{ item.name }}</strong>
+          <div class="muted">{{ item.supplier or "Vendor" }}</div>
+        </div>
+        <span class="tag warning">Qty {{ item.qty }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Inventory levels look good.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

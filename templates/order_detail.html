@@ -1,0 +1,166 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Order #{{ order.id }}</h1>
+    <p>{{ order.name }} - {{ order.phone }}</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('orders') }}">Back to orders</a>
+</div>
+
+<section class="card">
+  <h3>Order items</h3>
+  {% if items %}
+  <ul class="list">
+    {% for item in items %}
+    <li>
+      <div>
+        <strong>{{ item.item_type }}</strong> x {{ item.qty }}
+        {% if item.notes %}
+        <div class="muted">{{ item.notes }}</div>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No items found.</p>
+  {% endif %}
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h3>Order timeline</h3>
+    <ul class="list">
+      <li>
+        <div><strong>Ordered</strong></div>
+        <div class="muted">{{ order.created_at or "-" }}</div>
+      </li>
+      <li>
+        <div><strong>Completed</strong></div>
+        <div class="muted">{{ order.completed_at or "-" }}</div>
+      </li>
+      <li>
+        <div><strong>Picked up</strong></div>
+        <div class="muted">{{ order.picked_up_at or "-" }}</div>
+      </li>
+      <li>
+        <div><strong>Paid</strong></div>
+        <div class="muted">{{ order.paid_at or "-" }}</div>
+      </li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Customer notes</h3>
+    <p class="muted">{{ order.customer_notes or "No special notes." }}</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Reference photos</h3>
+  {% if images %}
+    <div class="preview-grid">
+      {% for img in images %}
+        <div class="image-box">
+          <div class="image-frame">
+            <img src="{{ url_for('static', filename='uploads/' ~ img.filename) }}" class="preview-click" alt="Order image"/>
+          </div>
+          {% if img.label %}
+            <div class="image-label-view">{{ img.label }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No images.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>Update status & assignment</h3>
+  <form class="stack" method="post">
+    <div class="grid two">
+      <label>
+        Status
+        <select name="status">
+          {% for value in ["Pending", "In progress", "Ready", "Completed"] %}
+          <option {% if order.status == value %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Due date
+        <input type="date" name="due_date" value="{{ order.due_date or '' }}" />
+      </label>
+      <label>
+        Assigned tailor
+        <select name="assigned_tailor">
+          <option value="">Not assigned</option>
+          {% for tailor in tailors %}
+          <option {% if order.assigned_tailor == tailor.name %}selected{% endif %}>
+            {{ tailor.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="grid two">
+      <label>
+        Advance amount
+        <input type="number" step="0.01" name="advance_amount" value="{{ order.advance_amount or '' }}" />
+      </label>
+      <label>
+        Total amount
+        <input type="number" step="0.01" name="total_amount" value="{{ order.total_amount or '' }}" />
+      </label>
+    </div>
+    <div class="radio-group">
+      <label>
+        <input type="checkbox" name="paid" value="1" {% if order.paid_at %}checked{% endif %}> Paid
+      </label>
+      <label>
+        <input type="checkbox" name="picked_up" value="1" {% if order.picked_up_at %}checked{% endif %}> Picked up
+      </label>
+    </div>
+    <label>
+      Order notes
+      <textarea name="notes" rows="3">{{ order.notes or "" }}</textarea>
+    </label>
+    <button class="btn primary" type="submit">Save changes</button>
+  </form>
+</section>
+
+<div id="image-modal" class="image-modal hidden">
+  <div class="image-modal-backdrop"></div>
+  <div class="image-modal-content">
+    <button class="modal-close" id="modal-close">x</button>
+    <img id="modal-image" src="" alt="Preview" />
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("image-modal");
+  const modalImg = document.getElementById("modal-image");
+  const closeBtn = document.getElementById("modal-close");
+
+  document.querySelectorAll(".preview-click").forEach(img => {
+    img.addEventListener("click", () => {
+      modalImg.src = img.src;
+      modal.classList.remove("hidden");
+    });
+  });
+
+  closeBtn.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target.classList.contains("image-modal-backdrop")) {
+      modal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+{% endblock %}

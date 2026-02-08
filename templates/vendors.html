@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Vendors</h1>
+      <p>Manage vendor details and recent orders.</p>
+    </div>
+    <div class="actions">
+      <a class="btn ghost" href="{{ url_for('vendors_add_purchase') }}">+ Add purchase</a>
+      <a class="btn primary" href="{{ url_for('vendors_add') }}">+ Add vendor</a>
+    </div>
+  </div>
+
+  <div class="filters" role="tablist" aria-label="Vendor tabs">
+    <button class="chip active" type="button" data-tab="vendors">Vendors</button>
+    <button class="chip" type="button" data-tab="purchases">Purchases</button>
+  </div>
+
+  <section class="card">
+    <div class="tab-panel active" data-panel="vendors">
+      <div class="table-wrap has-filters" style="--table-cols: 1fr 1.6fr 1fr 1fr 1.2fr 0.8fr 0.6fr;">
+        <div class="table-filters">
+          <input type="text" placeholder="Filter vendor ID" />
+          <input type="text" placeholder="Filter name" />
+          <input type="text" placeholder="Filter phone" />
+          <input type="text" placeholder="Filter created" />
+          <input type="text" placeholder="Filter recent order" />
+          <input type="text" placeholder="Filter spent" />
+          <div class="filter-spacer"></div>
+        </div>
+        <div class="table">
+          <div class="table-row table-head">
+            <div>Vendor ID</div>
+            <div>Vendor name</div>
+            <div>Phone</div>
+            <div>Created</div>
+            <div>Recent order</div>
+            <div>Spent</div>
+            <div></div>
+          </div>
+          {% if vendors %}
+            {% for v in vendors %}
+            <div class="table-row">
+              <div>{{ v.vendor_code }}</div>
+              <div>{{ v.name }}</div>
+              <div>{{ v.phone or "-" }}</div>
+              <div>{{ v.created_at }}</div>
+              <div>{{ v.last_order_at or "-" }}</div>
+              <div>Rs. {{ '%.2f'|format(v.spent or 0) }}</div>
+              <div>
+                <a class="icon-btn edit" href="{{ url_for('vendors_edit', vendor_id=v.id) }}" aria-label="Edit">&#9998;</a>
+                <form method="post" action="{{ url_for('vendors_delete', vendor_id=v.id) }}" style="display:inline;">
+                  <button class="icon-btn delete" type="submit" aria-label="Delete">&#128465;</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="table-row">
+              <div class="no-data" style="grid-column: 1 / -1;">No vendors yet.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-panel="purchases">
+      <div class="table-wrap has-filters" style="--table-cols: 1.3fr 1.6fr 0.7fr 0.7fr 0.9fr 0.9fr 1.2fr 0.6fr;">
+        <div class="table-filters">
+          <input type="text" placeholder="Filter vendor" />
+          <input type="text" placeholder="Filter material" />
+          <input type="text" placeholder="Filter qty" />
+          <input type="text" placeholder="Filter UOM" />
+          <input type="text" placeholder="Filter unit price" />
+          <input type="text" placeholder="Filter total" />
+          <input type="text" placeholder="Filter purchased" />
+          <div class="filter-spacer"></div>
+        </div>
+        <div class="table">
+          <div class="table-row table-head">
+            <div>Vendor</div>
+            <div>Material</div>
+            <div>Qty</div>
+            <div>UOM</div>
+            <div>Unit price</div>
+            <div>Total price</div>
+            <div>Purchased at</div>
+            <div></div>
+          </div>
+          {% if purchases %}
+            {% for p in purchases %}
+            <div class="table-row">
+              <div>{{ p.vendor_code }} - {{ p.vendor_name }}</div>
+              <div>{{ p.material_name }}</div>
+              <div>{{ p.qty }}</div>
+              <div>{{ p.uom_name or "-" }}</div>
+              <div>Rs. {{ '%.2f'|format(p.unit_price or 0) }}</div>
+              <div>Rs. {{ '%.2f'|format(p.total_price or 0) }}</div>
+              <div>{{ p.purchased_at }}</div>
+              <div>
+                <a class="icon-btn edit" href="{{ url_for('vendors_purchase_edit', purchase_id=p.id) }}" aria-label="Edit">&#9998;</a>
+                <form method="post" action="{{ url_for('vendors_purchase_delete', purchase_id=p.id) }}" style="display:inline;">
+                  <button class="icon-btn delete" type="submit" aria-label="Delete">&#128465;</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="table-row">
+              <div class="no-data" style="grid-column: 1 / -1;">No purchases recorded yet.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const tabs = document.querySelectorAll("[data-tab]");
+    const panels = document.querySelectorAll("[data-panel]");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.tab;
+        tabs.forEach((btn) => btn.classList.toggle("active", btn === tab));
+        panels.forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.panel === target);
+        });
+      });
+    });
+  </script>
+{% endblock %}

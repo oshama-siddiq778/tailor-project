@@ -1,0 +1,51 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit staff</h1>
+    <p>Update staff details and status.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('tailors') }}">Back to staff</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    <div class="grid two">
+      <label>
+        Staff ID
+        <input type="text" value="{{ tailor.tailor_code }}" readonly>
+      </label>
+      <label>
+        Staff name
+        <input type="text" name="name" value="{{ tailor.name }}" required>
+      </label>
+      <label>
+        Staff role
+        <input type="text" name="role" value="{{ tailor.role }}" required>
+      </label>
+      <label>
+        Phone number
+        <input type="text" name="phone" value="{{ tailor.phone }}" required>
+      </label>
+    </div>
+
+    <label>Status</label>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="status" value="Active" {% if tailor.status == "Active" %}checked{% endif %}> Active
+      </label>
+      <label>
+        <input type="radio" name="status" value="Working" {% if tailor.status == "Working" %}checked{% endif %}> Working
+      </label>
+      <label>
+        <input type="radio" name="status" value="Inactive" {% if tailor.status == "Inactive" %}checked{% endif %}> Inactive
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn primary">Save changes</button>
+      <a href="{{ url_for('tailors') }}" class="btn ghost">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

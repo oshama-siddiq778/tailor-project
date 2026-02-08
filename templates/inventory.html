@@ -1,0 +1,112 @@
+﻿{% extends "base.html" %}
+{% block content %}
+
+<!-- PAGE STYLES (LOCAL ONLY) -->
+<style>
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .inventory-table th,
+  .inventory-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  .inventory-table th {
+    background: #f9f1eb;
+  }
+  .no-data {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+  }
+  .filter-bar {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+  }
+  .filter-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+  @media (max-width: 1100px) {
+    .filter-bar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 720px) {
+    .filter-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<div class="page-head">
+  <div>
+    <h1>Inventory</h1>
+    <p>Track fabric, buttons, zippers, and supplies.</p>
+  </div>
+  <a class="btn primary" href="{{ url_for('inventory_add') }}">+ Add item</a>
+</div>
+
+<section class="card">
+  <div class="filter-bar inventory-filters">
+    <input class="filter-input" type="text" placeholder="Filter code" data-col="0" />
+    <input class="filter-input" type="text" placeholder="Filter item" data-col="1" />
+    <input class="filter-input" type="text" placeholder="Filter vendor" data-col="2" />
+    <input class="filter-input" type="text" placeholder="Filter qty" data-col="3" />
+    <input class="filter-input" type="text" placeholder="Filter UOM" data-col="4" />
+    <input class="filter-input" type="text" placeholder="Filter updated" data-col="5" />
+  </div>
+  <div class="table-scroll">
+    <table class="inventory-table" id="inventory-table">
+    <thead>
+      <tr>
+        <th>Inventory code</th>
+        <th>Item</th>
+        <th>Vendor</th>
+        <th>Qty</th>
+        <th>UOM</th>
+        <th>Last updated</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if items %}
+        {% for item in items %}
+        <tr>
+          <td>{{ item.inventory_code }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.supplier or "-" }}</td>
+          <td>{{ item.qty }}</td>
+          <td>{{ item.uom_name or "-" }}</td>
+          <td>{{ item.updated_at or "-" }}</td>
+          <td>
+            <a class="icon-btn edit" href="{{ url_for('inventory_edit', item_id=item.id) }}" aria-label="Edit">&#9998;</a>
+            <form method="post" action="{{ url_for('inventory_delete', item_id=item.id) }}" style="display:inline;">
+              <button class="icon-btn delete" type="submit" aria-label="Delete">&#128465;</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" class="no-data">No inventory items yet.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

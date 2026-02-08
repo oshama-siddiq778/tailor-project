@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "Premier Tailors" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <img src="{{ url_for('static', filename='Premier-Logo.png') }}" alt="Premier Tailors logo" />
+        </div>
+        <div>
+          <div class="brand-title">Premier Tailors</div>
+          <div class="brand-subtitle">Digital measurements &middot; Orders &middot; Inventory &middot; History</div>
+        </div>
+      </div>
+      <form class="top-search" method="get" action="{{ url_for('dashboard') }}">
+        <input type="search" name="q" placeholder="Search pickup: name or phone" value="{{ q or '' }}" />
+        <button class="btn ghost" type="submit">Search</button>
+      </form>
+      <nav class="nav">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('orders') }}">Orders</a>
+        <a href="{{ url_for('customers') }}">Customers</a>
+        <a href="{{ url_for('inventory') }}">Inventory</a>
+        <a href="{{ url_for('expense_dashboard') }}">Expense</a>
+        <a href="{{ url_for('vendors') }}">Vendors</a>
+        <a href="{{ url_for('categories') }}">Categories</a>
+        <a href="{{ url_for('tailors') }}">Staff</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      {% if error %}
+      <div class="alert">{{ error }}</div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+      iLogicTech Tailoring Management Software v1.0
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
+

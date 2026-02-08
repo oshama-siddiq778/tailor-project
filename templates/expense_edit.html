@@ -1,0 +1,47 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit expense</h1>
+    <p>Update expense or salary entry.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('expense_dashboard') }}">Back to expense</a>
+</div>
+
+<section class="card">
+  <form class="stack" method="post">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <div class="grid two">
+      <label>
+        Expense no
+        <input type="text" value="{{ expense.expense_no }}" readonly>
+      </label>
+      <label>
+        Expense name
+        <input type="text" name="expense_name" value="{{ expense.expense_name }}" required>
+      </label>
+      <label>
+        Amount
+        <input type="number" step="0.01" name="expense_amount" value="{{ expense.amount }}" required>
+      </label>
+      <label>
+        Staff no
+        <select name="staff_no" {% if not salary %}disabled{% endif %}>
+          <option value="">-- Select Staff --</option>
+          {% for s in staffs %}
+          <option value="{{ s.tailor_code }}" {% if salary and salary.staff_no == s.tailor_code %}selected{% endif %}>{{ s.tailor_code }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Save changes</button>
+      <a class="btn ghost" href="{{ url_for('expense_dashboard') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

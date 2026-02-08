@@ -1,0 +1,336 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Create new order</h1>
+    <p>Capture customer details, measurements, and order items in one flow.</p>
+  </div>
+</div>
+
+<form class="stack" method="post" enctype="multipart/form-data">
+  <div class="order-layout">
+    <div class="order-main">
+      <section class="card">
+        <h3>Customer details</h3>
+        <div class="grid two">
+          <label>
+            Name
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            Phone
+            <input type="text" name="phone" required />
+          </label>
+        </div>
+        <label>
+          Notes / preferences
+          <textarea name="customer_notes" rows="2"></textarea>
+        </label>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h3>Requirements</h3>
+          <span class="pill">Quick-select</span>
+        </div>
+        {% if requirement_icons %}
+        <div class="req-grid">
+          {% for req in requirement_icons %}
+          <div class="req-toggle">
+            <input id="req-{{ req.id }}" type="checkbox" name="requirements" value="{{ req.name }}" />
+            <label for="req-{{ req.id }}">
+              <span class="req-icon">
+                <img src="{{ url_for('static', filename='req_icons/' ~ req.filename) }}" alt="{{ req.name }}" />
+              </span>
+              <span>{{ req.name }}</span>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No requirement icons yet. Add them in Categories.</p>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h3>Measurements</h3>
+          <span class="pill">Multiple sizes per clothing</span>
+        </div>
+        {% if categories %}
+        <div class="tabs">
+          {% for category in categories %}
+          <button type="button" class="tab-btn {{ 'active' if loop.first else '' }}" data-tab="cat-{{ category.id }}">{{ category.name }}</button>
+          {% endfor %}
+        </div>
+
+        {% for category in categories %}
+        <div class="tab-panel {{ 'active' if loop.first else '' }}" data-panel="cat-{{ category.id }}">
+          <div class="measurement-list" data-kind="{{ category.id }}">
+            <div class="measurement-block">
+              <input type="hidden" name="measure_category_id" value="{{ category.id }}" />
+              <div class="measurement-head">
+                <div class="measurement-title">{{ category.name }} size set</div>
+                <label class="measurement-label">Label
+                  <input class="measure-label-input" type="text" name="measure_label" placeholder="Regular fit / Office" />
+                </label>
+                <button type="button" class="btn ghost measure-delete" aria-label="Remove size">×</button>
+              </div>
+              <div class="grid two">
+                <label>
+                  Sub category
+                  <select name="measure_subcategory_id" class="subcategory-select">
+                    <option value="">Select</option>
+                    {% for sub in subcategories if sub.category_id == category.id %}
+                    <option value="{{ sub.id }}">{{ sub.name }}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+                <div></div>
+              </div>
+
+              <div class="measurement-fields"></div>
+              <p class="muted measurement-empty">Select a subcategory to load fields.</p>
+
+              <div class="fraction-row">
+                <button type="button" class="fraction-chip" data-value="1/4">+ 1/4</button>
+                <button type="button" class="fraction-chip" data-value="1/2">+ 1/2</button>
+                <button type="button" class="fraction-chip" data-value="3/4">+ 3/4</button>
+              </div>
+              <label>
+                Notes
+                <textarea name="measure_notes" rows="2"></textarea>
+              </label>
+            </div>
+          </div>
+          <div class="measurement-actions">
+            <button type="button" class="btn ghost add-measure" data-target="{{ category.id }}">+ Add another {{ category.name | lower }} size</button>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="muted">No categories yet. Add them in Categories.</p>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h3>Order items</h3>
+          <button type="button" class="btn ghost" id="add-item">+ Add item</button>
+        </div>
+          <div class="table order-items-table">
+            <div class="table-row table-head">
+              <div>Item type</div>
+              <div>Qty</div>
+              <div>Notes</div>
+              <div></div>
+            </div>
+            <div id="items" data-item-options="{{ categories | map(attribute='name') | join('|') }}">
+              <div class="table-row">
+                <div>
+                  <select name="item_type">
+                  {% if categories %}
+                  {% for category in categories %}
+                  <option value="{{ category.name }}">{{ category.name }}</option>
+                  {% endfor %}
+                  {% else %}
+                  <option value="">No categories</option>
+                  {% endif %}
+                </select>
+              </div>
+              <div><input type="number" name="item_qty" value="1" min="1" /></div>
+              <div><input type="text" name="item_notes" placeholder="Style, fabric, etc." /></div>
+              <div><button type="button" class="btn ghost item-delete" aria-label="Remove item">×</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Order assignment</h3>
+        <div class="grid two">
+          <label>
+            Due date
+            <input type="date" name="due_date" />
+          </label>
+          <label>
+            Priority
+            <select name="priority">
+              <option>Normal</option>
+              <option>High</option>
+              <option>Urgent</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select name="status">
+              <option>Pending</option>
+              <option>In progress</option>
+              <option>Ready</option>
+              <option>Completed</option>
+            </select>
+          </label>
+          <label>
+            Assigned tailor
+            <select name="assigned_tailor">
+              <option value="">Not assigned</option>
+              {% for tailor in tailors %}
+              <option>{{ tailor.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <label>
+          Order notes
+          <textarea name="order_notes" rows="2"></textarea>
+        </label>
+        <div class="grid two">
+          <label>
+            Advance amount
+            <input type="number" step="0.01" name="advance_amount" placeholder="0.00" />
+          </label>
+          <label>
+            Total amount
+            <input type="number" step="0.01" name="total_amount" placeholder="0.00" />
+          </label>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="submit" class="btn primary">Save order</button>
+        <a class="btn ghost" href="{{ url_for('orders') }}">Cancel</a>
+      </div>
+    </div>
+
+    <aside class="order-side">
+      <section class="card photo-card">
+        <div class="card-header">
+          <h3>Reference photos</h3>
+          <button type="button" class="btn ghost" id="add-image-btn">
+            + Add image
+          </button>
+        </div>
+
+        <input
+          id="order-images"
+          type="file"
+          name="order_images"
+          accept="image/*"
+          multiple
+          hidden
+        />
+
+        <p class="muted">Add camera or gallery images.</p>
+
+        <div id="image-previews" class="preview-grid"></div>
+      </section>
+
+    </aside>
+  </div>
+</form>
+
+{% for category in categories %}
+<template id="measure-template-{{ category.id }}">
+  <div class="measurement-block">
+    <input type="hidden" name="measure_category_id" value="{{ category.id }}" />
+  <div class="measurement-head">
+    <div class="measurement-title">{{ category.name }} size set</div>
+    <label class="measurement-label">Label
+      <input class="measure-label-input" type="text" name="measure_label" placeholder="Regular fit / Office" />
+    </label>
+    <button type="button" class="btn ghost measure-delete" aria-label="Remove size">×</button>
+  </div>
+    <div class="grid two">
+      <label>
+        Sub category
+        <select name="measure_subcategory_id" class="subcategory-select">
+          <option value="">Select</option>
+          {% for sub in subcategories if sub.category_id == category.id %}
+          <option value="{{ sub.id }}">{{ sub.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div></div>
+    </div>
+
+    <div class="measurement-fields"></div>
+    <p class="muted measurement-empty">Select a subcategory to load fields.</p>
+
+    <div class="fraction-row">
+      <button type="button" class="fraction-chip" data-value="1/4">+ 1/4</button>
+      <button type="button" class="fraction-chip" data-value="1/2">+ 1/2</button>
+      <button type="button" class="fraction-chip" data-value="3/4">+ 3/4</button>
+    </div>
+    <label>
+      Notes
+      <textarea name="measure_notes" rows="2"></textarea>
+    </label>
+  </div>
+</template>
+{% endfor %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  window.measurementFieldMap = {{ measurement_field_map | tojson }};
+  const input = document.getElementById("order-images");
+  const button = document.getElementById("add-image-btn");
+  const preview = document.getElementById("image-previews");
+
+  if (!input || !button || !preview) return;
+
+  let storedFiles = [];
+
+  button.addEventListener("click", () => input.click());
+
+  input.addEventListener("change", function () {
+    storedFiles = storedFiles.concat(Array.from(input.files));
+    rebuildInputFiles();
+    renderPreviews();
+  });
+
+  function rebuildInputFiles() {
+    const dt = new DataTransfer();
+    storedFiles.forEach(file => dt.items.add(file));
+    input.files = dt.files;
+  }
+
+  function renderPreviews() {
+    preview.innerHTML = "";
+
+    storedFiles.forEach((file, index) => {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "image-box";
+
+        wrapper.innerHTML = `
+          <div class="image-frame">
+            <img src="${e.target.result}" />
+            <button type="button" class="delete-btn">x</button>
+          </div>
+          <input
+            type="text"
+            name="image_labels"
+            placeholder="Image name"
+            class="image-label"
+          />
+        `;
+
+        const deleteBtn = wrapper.querySelector(".delete-btn");
+        deleteBtn.addEventListener("click", function () {
+          storedFiles.splice(index, 1);
+          rebuildInputFiles();
+          renderPreviews();
+        });
+
+        preview.appendChild(wrapper);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+});
+</script>
+
+{% endblock %}
